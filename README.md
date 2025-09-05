@@ -124,6 +124,7 @@ O servidor estará disponível em `http://127.0.0.1:8000`.
 ### 6. Acessando a Documentação da API
 A aplicação inclui documentação interativa gerada automaticamente:
 - **Swagger UI**: Acesse [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **ReDoc**: Acesse [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
 ## Endpoints da API
 
