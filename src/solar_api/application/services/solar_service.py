@@ -7,5 +7,4 @@ class SolarService:
         self.pvgis_service = pvgis_service
 
     async def calculate_energy_production(self, params: PVGISRequest) -> dict:
-        # Aqui poderiam entrar outras regras de negócio, validações, etc.
         return await self.pvgis_service.get_pv_data(params)

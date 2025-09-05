@@ -1,0 +1,44 @@
+{
+  "models": [
+    {
+      "name": "Canadian Solar 400W",
+      "capacity": 0.4,
+      "efficiency": 20.5,
+      "manufacturer": "Canadian Solar",
+      "type": "Monocristalino",
+      "id": "ab256fbc-6e92-47c9-990d-4b13403b8915"
+    },
+    {
+      "name": "Jinko Tiger Pro 455W",
+      "capacity": 0.455,
+      "efficiency": 21.2,
+      "manufacturer": "Jinko Solar",
+      "type": "Monocristalino",
+      "id": "38c54787-10d5-4b02-8ef0-dc9b6da2381d"
+    },
+    {
+      "name": "Trina Solar 410W",
+      "capacity": 0.41,
+      "efficiency": 20.8,
+      "manufacturer": "Trina Solar",
+      "type": "Monocristalino",
+      "id": "b08e911c-e8ea-40c6-8afe-024e009b73e8"
+    },
+    {
+      "name": "JA Solar 380W",
+      "capacity": 0.38,
+      "efficiency": 19.9,
+      "manufacturer": "JA Solar",
+      "type": "Monocristalino",
+      "id": "d9e86a5a-58e0-474f-8cb9-1e08e1987430"
+    },
+    {
+      "name": "Longi 435W",
+      "capacity": 0.435,
+      "efficiency": 21.0,
+      "manufacturer": "Longi Solar",
+      "type": "Monocristalino",
+      "id": "bab746b6-a4e0-49cb-aae1-87c2dd239917"
+    }
+  ]
+}
