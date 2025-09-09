@@ -19,7 +19,6 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = (Index("ix_users_api_key", "api_key", unique=True),)
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)

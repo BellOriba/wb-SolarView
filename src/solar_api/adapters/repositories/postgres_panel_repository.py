@@ -1,6 +1,6 @@
 from typing import List, Optional
 from uuid import UUID
-from sqlalchemy import select, update, delete, and_
+from sqlalchemy import select, update, delete, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.solar_api.domain.panel_model import (
     PanelModel,

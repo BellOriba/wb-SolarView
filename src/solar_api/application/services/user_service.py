@@ -31,8 +31,8 @@ class UserService:
     ) -> Optional[UserInDB]:
         if user_id != current_user.id and not current_user.is_admin:
             raise ValueError("Not authorized to update this user")
-
-        return await self.user_repository.update(user_id, user_update)
+        update_data = user_update.model_dump(exclude_unset=True)
+        return await self.user_repository.update(user_id, update_data)
 
     async def delete_user(self, user_id: int, current_user: UserInDB) -> bool:
         if user_id != current_user.id and not current_user.is_admin:
@@ -52,8 +52,6 @@ class UserService:
         new_api_key = generate_api_key()
         await self.user_repository.update(user_id, {"api_key": new_api_key})
         return new_api_key
-
-        return await self.user_repository.delete(user_id)
 
     async def list_users(
         self, skip: int = 0, limit: int = 100, current_user: Optional[UserInDB] = None
@@ -87,8 +85,6 @@ class UserService:
             ):
                 raise ValueError("Current password is incorrect")
 
-        from ...domain.user_models import UserUpdate
-
-        await self.user_repository.update(user_id, UserUpdate(password=new_password))
+        await self.user_repository.update(user_id, {"password": new_password})
 
         return True

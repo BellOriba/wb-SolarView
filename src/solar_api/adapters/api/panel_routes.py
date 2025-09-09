@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.solar_api.database import get_db
@@ -12,7 +12,10 @@ from src.solar_api.domain.panel_model import (
     PanelModelCreate,
     PanelModelUpdate,
 )
-from src.solar_api.adapters.api.dependencies import get_current_active_user
+from src.solar_api.adapters.api.dependencies import (
+    get_current_active_user,
+    get_admin_user,
+)
 from src.solar_api.domain.user_models import UserInDB
 
 router = APIRouter(prefix="/api/panel-models", tags=["Panel Models"])
@@ -31,8 +34,21 @@ def get_panel_service(db: AsyncSession = Depends(get_db)) -> PanelService:
 async def list_panel_models(
     current_user: UserInDB = Depends(get_current_active_user),
     panel_service: PanelService = Depends(get_panel_service),
+    manufacturer: Optional[str] = None,
+    min_power: Optional[float] = None,
+    max_price: Optional[float] = None,
+    min_efficiency: Optional[float] = None,
 ):
-    return await panel_service.get_all_models(user_id=current_user.id)
+    panels = await panel_service.get_all_models(user_id=current_user.id)
+
+    if manufacturer is not None:
+        panels = [p for p in panels if p.manufacturer == manufacturer]
+    if min_power is not None:
+        panels = [p for p in panels if p.capacity >= min_power]
+    if min_efficiency is not None:
+        panels = [p for p in panels if p.efficiency >= min_efficiency]
+
+    return panels
 
 
 @router.get(
@@ -56,10 +72,10 @@ async def get_panel_model(
 )
 async def create_panel_model(
     panel: PanelModelCreate,
-    current_user: UserInDB = Depends(get_current_active_user),
+    admin_user: UserInDB = Depends(get_admin_user),
     panel_service: PanelService = Depends(get_panel_service),
 ):
-    return await panel_service.create_model(panel=panel, user_id=current_user.id)
+    return await panel_service.create_model(panel=panel, user_id=admin_user.id)
 
 
 @router.put(
@@ -68,11 +84,11 @@ async def create_panel_model(
 async def update_panel_model(
     model_id: UUID,
     panel_update: PanelModelUpdate,
-    current_user: UserInDB = Depends(get_current_active_user),
+    admin_user: UserInDB = Depends(get_admin_user),
     panel_service: PanelService = Depends(get_panel_service),
 ):
     return await panel_service.update_model(
-        model_id=model_id, panel_update=panel_update, user_id=current_user.id
+        model_id=model_id, panel_update=panel_update, user_id=admin_user.id
     )
 
 
@@ -83,8 +99,8 @@ async def update_panel_model(
 )
 async def delete_panel_model(
     model_id: UUID,
-    current_user: UserInDB = Depends(get_current_active_user),
+    admin_user: UserInDB = Depends(get_admin_user),
     panel_service: PanelService = Depends(get_panel_service),
 ):
-    await panel_service.delete_model(model_id=model_id, user_id=current_user.id)
+    await panel_service.delete_model(model_id=model_id, user_id=admin_user.id)
     return None
