@@ -12,8 +12,8 @@ from src.solar_api.domain.panel_model import (
     PanelModelCreate,
     PanelModelUpdate,
 )
-from src.solar_api.adapters.api.dependencies import (
-    get_current_active_user,
+from src.solar_api.application.services.auth_service import (
+    get_current_user,
     get_admin_user,
 )
 from src.solar_api.domain.user_models import UserInDB
@@ -32,21 +32,23 @@ def get_panel_service(db: AsyncSession = Depends(get_db)) -> PanelService:
     summary="List all panel models for the current user",
 )
 async def list_panel_models(
-    current_user: UserInDB = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_current_user),
     panel_service: PanelService = Depends(get_panel_service),
     manufacturer: Optional[str] = None,
-    min_power: Optional[float] = None,
-    max_price: Optional[float] = None,
+    min_capacity: Optional[float] = None,
     min_efficiency: Optional[float] = None,
+    panel_type: Optional[str] = None,
 ):
     panels = await panel_service.get_all_models(user_id=current_user.id)
 
     if manufacturer is not None:
         panels = [p for p in panels if p.manufacturer == manufacturer]
-    if min_power is not None:
-        panels = [p for p in panels if p.capacity >= min_power]
+    if min_capacity is not None:
+        panels = [p for p in panels if p.capacity >= min_capacity]
     if min_efficiency is not None:
         panels = [p for p in panels if p.efficiency >= min_efficiency]
+    if panel_type is not None:
+        panels = [p for p in panels if p.type == panel_type]
 
     return panels
 
@@ -56,7 +58,7 @@ async def list_panel_models(
 )
 async def get_panel_model(
     model_id: UUID,
-    current_user: UserInDB = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_current_user),
     panel_service: PanelService = Depends(get_panel_service),
 ):
     return await panel_service.get_model_by_id(

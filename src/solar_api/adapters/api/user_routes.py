@@ -82,7 +82,12 @@ async def update_user(
         )
 
     try:
-        return await user_service.update_user(user_id, user_update, current_user)
+        updated = await user_service.update_user(user_id, user_update, current_user)
+        if updated is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+        return updated
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

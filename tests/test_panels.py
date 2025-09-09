@@ -193,20 +193,12 @@ async def test_search_panels(client, admin_auth_header):
     assert all(panel["manufacturer"] == "SolarTech" for panel in results)
 
     response = await client.get(
-        "/api/panel-models/?min_power=0.35", headers=admin_auth_header
+        "/api/panel-models/?min_capacity=0.35", headers=admin_auth_header
     )
     assert_response_status(response, status.HTTP_200_OK)
     results = response.json()
     assert len(results) >= 2
     assert all(panel["capacity"] >= 0.35 for panel in results)
-
-    response = await client.get(
-        "/api/panel-models/?max_price=1500", headers=admin_auth_header
-    )
-    assert_response_status(response, status.HTTP_200_OK)
-    results = response.json()
-    assert len(results) >= 0
-    assert all(panel.get("price_brl", 0) <= 1500 for panel in results)
 
     response = await client.get(
         "/api/panel-models/?manufacturer=SolarTech&min_efficiency=19.5",
