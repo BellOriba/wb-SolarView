@@ -1,80 +1,90 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from uuid import UUID
 from typing import List
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.solar_api.database import get_db
+from src.solar_api.adapters.repositories.postgres_panel_repository import (
+    PostgresPanelRepository,
+)
+from src.solar_api.application.services.panel_service import PanelService
 from src.solar_api.domain.panel_model import (
     PanelModel,
     PanelModelCreate,
     PanelModelUpdate,
 )
-from src.solar_api.application.services.panel_service import PanelService
-from src.solar_api.adapters.repositories.json_panel_repository import (
-    JSONPanelRepository,
-)
-from src.solar_api.adapters.api.dependencies import verify_credentials
-import os
+from src.solar_api.adapters.api.dependencies import get_current_active_user
+from src.solar_api.domain.user_models import UserInDB
 
 router = APIRouter(prefix="/api/panel-models", tags=["Panel Models"])
 
-PANEL_MODELS_FILE = os.getenv("PANEL_MODELS_FILE", "storage/models.json")
-panel_repository = JSONPanelRepository(PANEL_MODELS_FILE)
-panel_service = PanelService(panel_repository)
+
+def get_panel_service(db: AsyncSession = Depends(get_db)) -> PanelService:
+    panel_repository = PostgresPanelRepository(db)
+    return PanelService(panel_repository)
 
 
 @router.get(
-    "/", response_model=List[PanelModel], dependencies=[Depends(verify_credentials)]
+    "/",
+    response_model=List[PanelModel],
+    summary="List all panel models for the current user",
 )
-async def list_panel_models():
-    return await panel_service.get_all_models()
+async def list_panel_models(
+    current_user: UserInDB = Depends(get_current_active_user),
+    panel_service: PanelService = Depends(get_panel_service),
+):
+    return await panel_service.get_all_models(user_id=current_user.id)
 
 
 @router.get(
-    "/{model_id}", response_model=PanelModel, dependencies=[Depends(verify_credentials)]
+    "/{model_id}", response_model=PanelModel, summary="Get a specific panel model by ID"
 )
-async def get_panel_model(model_id: str):
-    model = await panel_service.get_model_by_id(model_id)
-    if not model:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Panel model with ID {model_id} not found",
-        )
-    return model
+async def get_panel_model(
+    model_id: UUID,
+    current_user: UserInDB = Depends(get_current_active_user),
+    panel_service: PanelService = Depends(get_panel_service),
+):
+    return await panel_service.get_model_by_id(
+        model_id=model_id, user_id=current_user.id
+    )
 
 
 @router.post(
     "/",
     response_model=PanelModel,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(verify_credentials)],
+    summary="Create a new panel model",
 )
-async def create_panel_model(panel: PanelModelCreate):
-    try:
-        return await panel_service.create_model(panel)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+async def create_panel_model(
+    panel: PanelModelCreate,
+    current_user: UserInDB = Depends(get_current_active_user),
+    panel_service: PanelService = Depends(get_panel_service),
+):
+    return await panel_service.create_model(panel=panel, user_id=current_user.id)
 
 
 @router.put(
-    "/{model_id}", response_model=PanelModel, dependencies=[Depends(verify_credentials)]
+    "/{model_id}", response_model=PanelModel, summary="Update an existing panel model"
 )
-async def update_panel_model(model_id: str, panel_update: PanelModelUpdate):
-    updated_panel = await panel_service.update_model(model_id, panel_update)
-    if not updated_panel:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Panel model with ID {model_id} not found",
-        )
-    return updated_panel
+async def update_panel_model(
+    model_id: UUID,
+    panel_update: PanelModelUpdate,
+    current_user: UserInDB = Depends(get_current_active_user),
+    panel_service: PanelService = Depends(get_panel_service),
+):
+    return await panel_service.update_model(
+        model_id=model_id, panel_update=panel_update, user_id=current_user.id
+    )
 
 
 @router.delete(
     "/{model_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(verify_credentials)],
+    summary="Delete a panel model",
 )
-async def delete_panel_model(model_id: str):
-    success = await panel_service.delete_model(model_id)
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Panel model with ID {model_id} not found",
-        )
+async def delete_panel_model(
+    model_id: UUID,
+    current_user: UserInDB = Depends(get_current_active_user),
+    panel_service: PanelService = Depends(get_panel_service),
+):
+    await panel_service.delete_model(model_id=model_id, user_id=current_user.id)
     return None
