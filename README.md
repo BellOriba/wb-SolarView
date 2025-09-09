@@ -412,3 +412,84 @@ pytest --cov=src/solar_api tests/
   - **Cabeçalho obrigatório**: `X-API-Key: sua-chave-de-api`
   - **Parâmetros de URL**:
     - `model_id`: UUID do modelo a ser removido
+
+## Testes
+
+O projeto inclui uma suíte abrangente de testes automatizados para garantir a qualidade e estabilidade do código.
+
+### Estrutura de Testes
+
+Os testes estão organizados nos seguintes arquivos:
+
+- `tests/test_auth.py`: Testes para autenticação e gerenciamento de usuários
+- `tests/test_panels.py`: Testes para gerenciamento de painéis solares
+- `tests/test_calculations.py`: Testes para cálculos de produção solar
+- `tests/conftest.py`: Configurações e fixtures para os testes
+- `tests/test_utils.py`: Utilitários para auxiliar nos testes
+
+### Como Executar os Testes
+
+1. **Instalar as dependências de desenvolvimento**
+   ```bash
+   pip install pytest pytest-cov httpx aiosqlite
+   ```
+
+2. **Executar todos os testes**
+   ```bash
+   pytest
+   ```
+
+3. **Executar testes com cobertura**
+   ```bash
+   pytest --cov=src --cov-report=term-missing --cov-report=html
+   ```
+   Isso irá gerar:
+   - Um relatório no terminal mostrando a cobertura de código
+   - Uma pasta `htmlcov/` com um relatório HTML detalhado
+
+4. **Executar um arquivo de teste específico**
+   ```bash
+   pytest tests/test_auth.py -v
+   ```
+
+5. **Executar um teste específico**
+   ```bash
+   pytest tests/test_auth.py::test_login_success -v
+   ```
+
+### Cobertura de Testes
+
+O projeto utiliza o `pytest-cov` para medir a cobertura de código. O objetivo é manter uma cobertura alta, preferencialmente acima de 80%.
+
+- Para ver a cobertura atual, execute:
+  ```bash
+  pytest --cov=src --cov-report=term-missing
+  ```
+
+- Para gerar um relatório HTML detalhado:
+  ```bash
+  pytest --cov=src --cov-report=html
+  ```
+  E então abra `htmlcov/index.html` em um navegador.
+
+- Para ver a cobertura e relatório HTML detalhado:
+  ```bash
+  pytest --cov=src --cov-report=term-missing --cov-report=html -v
+  ```
+  E então abra `htmlcov/index.html` em um navegador.
+
+### Testes de Integração
+
+Os testes de integração verificam a interação entre diferentes componentes da aplicação, incluindo:
+
+- Conexão com o banco de dados
+- Autenticação e autorização
+- Chamadas a APIs externas (mockadas)
+
+### Testes de Aceitação
+
+Os testes de aceitação verificam se os requisitos do usuário final estão sendo atendidos, simulando interações reais com a API.
+
+### Mocking
+
+Para evitar chamadas reais a serviços externos (como a API do PVGIS), utilizamos mocks nos testes.
