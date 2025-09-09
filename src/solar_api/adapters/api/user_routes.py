@@ -5,13 +5,12 @@ from src.solar_api.domain.user_models import (
     UserCreate, 
     UserUpdate, 
     UserInDB, 
-    UserResponse,
-    UserInDB
+    UserResponse
 )
 from src.solar_api.application.services.user_service import UserService
 from src.solar_api.adapters.repositories import PostgresUserRepository
 from src.solar_api.database import get_db
-from .dependencies import get_current_active_user
+from src.solar_api.application.services.auth_service import get_current_user, get_admin_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -22,6 +21,7 @@ def get_user_service(db=Depends(get_db)) -> UserService:
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user: UserCreate,
+    current_user: UserInDB = Depends(get_admin_user),
     user_service: UserService = Depends(get_user_service)
 ):
     try:
@@ -33,16 +33,16 @@ async def create_user(
         )
 
 @router.get("/me", response_model=UserResponse)
-async def read_users_me(current_user: UserInDB = Depends(get_current_active_user)):
+async def read_users_me(current_user: UserInDB = Depends(get_current_user)):
     return current_user
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def read_user(
     user_id: int,
-    current_user: UserInDB = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service)
 ):
-    if not current_user.is_superuser and current_user.id != user_id:
+    if not current_user.is_admin and current_user.id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
@@ -60,26 +60,26 @@ async def read_user(
 async def list_users(
     skip: int = 0,
     limit: int = 100,
-    current_user: UserInDB = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_admin_user),
     user_service: UserService = Depends(get_user_service)
 ):
-    return await user_service.list_users(skip=skip, limit=limit, current_user=current_user)
+    return await user_service.list_users(skip=skip, limit=limit)
 
 @router.put("/{user_id}", response_model=UserResponse)
 async def update_user(
     user_id: int,
     user_update: UserUpdate,
-    current_user: UserInDB = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service)
 ):
+    if not current_user.is_admin and current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+    
     try:
-        user = await user_service.update_user(user_id, user_update, current_user)
-        if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
-        return user
+        return await user_service.update_user(user_id, user_update, current_user)
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -89,7 +89,7 @@ async def update_user(
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user_id: int,
-    current_user: UserInDB = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_admin_user),
     user_service: UserService = Depends(get_user_service)
 ):
     try:
@@ -101,7 +101,7 @@ async def delete_user(
             )
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
 
@@ -110,7 +110,7 @@ async def change_password(
     user_id: int,
     current_password: str,
     new_password: str,
-    current_user: UserInDB = Depends(get_current_active_user),
+    current_user: UserInDB = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service)
 ):
     try:

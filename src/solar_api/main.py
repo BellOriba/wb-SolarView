@@ -5,11 +5,13 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import APIKeyHeader
 
 from src.solar_api.adapters.api import routes, panel_routes, user_routes, auth_routes
-from src.solar_api.database import init_db
+from src.solar_api.database import init_db, get_db
+from src.solar_api.application.services.auth_service import AuthService
 
 app = FastAPI(
     title="SolarView API",
@@ -18,10 +20,14 @@ app = FastAPI(
     
     ## Authentication
     
-    This API uses JWT for authentication. To get started:
-    1. Create a user account at `/users/`
-    2. Get an access token at `/token`
-    3. Use the access token in the Authorization header: `Bearer <token>`
+    This API uses API Key for authentication. To get started:
+    1. Login at `/auth/login` with your email and password
+    2. Use the returned API key in the `X-API-Key` header for all requests
+    
+    ## Security
+    - All API endpoints require authentication by default
+    - Admin endpoints are protected and require admin privileges
+    - API keys should be kept secure and not shared
     """,
     version="1.0.0",
     docs_url="/docs",

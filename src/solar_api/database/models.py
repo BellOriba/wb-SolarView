@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, func
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import expression
 
@@ -6,12 +6,15 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (
+        Index('ix_users_api_key', 'api_key', unique=True),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
+    api_key = Column(String, unique=True, index=True, nullable=False)
     is_active = Column(Boolean, server_default=expression.true(), nullable=False)
-    is_superuser = Column(Boolean, server_default=expression.false(), nullable=False)
+    is_admin = Column(Boolean, server_default=expression.false(), nullable=False, name="is_admin")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
 

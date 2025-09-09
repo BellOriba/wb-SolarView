@@ -1,5 +1,5 @@
 from typing import Optional, List
-from ...domain.user_models import UserCreate, UserUpdate, UserInDB
+from ...domain.user_models import UserCreate, UserUpdate, UserInDB, generate_api_key
 from ...application.ports.user_repository import UserRepositoryPort
 
 class UserService:
@@ -13,12 +13,18 @@ class UserService:
     async def get_user_by_email(self, email: str) -> Optional[UserInDB]:
         return await self.user_repository.get_by_email(email)
     
+    async def get_user_by_api_key(self, api_key: str) -> Optional[UserInDB]:
+        return await self.user_repository.get_by_api_key(api_key)
+    
     async def create_user(self, user: UserCreate) -> UserInDB:
         existing_user = await self.user_repository.get_by_email(user.email)
         if existing_user:
             raise ValueError("User with this email already exists")
         
-        return await self.user_repository.create(user)
+        user_data = user.model_dump()
+        user_data["api_key"] = generate_api_key()
+        
+        return await self.user_repository.create(user_data)
     
     async def update_user(
         self, 
@@ -26,28 +32,27 @@ class UserService:
         user_update: UserUpdate,
         current_user: UserInDB
     ) -> Optional[UserInDB]:
-        existing_user = await self.user_repository.get_by_id(user_id)
-        if not existing_user:
-            return None
-            
-        if current_user.id != user_id and not current_user.is_superuser:
+        if user_id != current_user.id and not current_user.is_admin:
             raise ValueError("Not authorized to update this user")
             
-        if not current_user.is_superuser:
-            if user_update.is_superuser is not None:
-                raise ValueError("Only administrators can change superuser status")
-            if user_update.is_active is not None and user_id != current_user.id:
-                raise ValueError("Only administrators can deactivate other users")
-        
         return await self.user_repository.update(user_id, user_update)
     
     async def delete_user(self, user_id: int, current_user: UserInDB) -> bool:
-        existing_user = await self.user_repository.get_by_id(user_id)
-        if not existing_user:
-            return False
-            
-        if current_user.id != user_id and not current_user.is_superuser:
+        if user_id != current_user.id and not current_user.is_admin:
             raise ValueError("Not authorized to delete this user")
+            
+        if user_id == current_user.id:
+            raise ValueError("Cannot delete your own account")
+            
+        return await self.user_repository.delete(user_id)
+    
+    async def rotate_api_key(self, user_id: int, current_user: UserInDB) -> Optional[str]:
+        if user_id != current_user.id and not current_user.is_admin:
+            raise ValueError("Not authorized to rotate this user's API key")
+            
+        new_api_key = generate_api_key()
+        await self.user_repository.update(user_id, {"api_key": new_api_key})
+        return new_api_key
             
         return await self.user_repository.delete(user_id)
     

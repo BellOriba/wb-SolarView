@@ -1,14 +1,13 @@
 from datetime import datetime
 from typing import Optional
+import secrets
+import string
 from pydantic import BaseModel, EmailStr, Field, validator
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserBase(BaseModel):
     email: EmailStr = Field(..., description="User's email address")
     is_active: bool = Field(default=True, description="Whether the user is active")
-    is_superuser: bool = Field(default=False, description="Whether the user has admin privileges")
+    is_admin: bool = Field(default=False, description="Whether the user has admin privileges")
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8, description="User's password (min 8 characters)")
@@ -33,7 +32,7 @@ class UserUpdate(BaseModel):
 
 class UserInDB(UserBase):
     id: int
-    hashed_password: str
+    api_key: str = Field(..., description="API key for authentication")
     created_at: datetime
     updated_at: datetime
 
@@ -52,11 +51,6 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-class TokenData(BaseModel):
-    email: Optional[str] = None
-
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+def generate_api_key() -> str:
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(32))
