@@ -1,1 +1,3 @@
-# This file makes the repositories directory a Python package
+from .postgres_user_repository import PostgresUserRepository
+
+__all__ = ["PostgresUserRepository"]

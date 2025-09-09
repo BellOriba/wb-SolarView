@@ -1,24 +1,56 @@
+import sys
+from pathlib import Path
+
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 import uvicorn
 from fastapi import FastAPI
-from src.solar_api.adapters.api import routes
-from src.solar_api.adapters.api import panel_routes
+from fastapi.middleware.cors import CORSMiddleware
+
+from src.solar_api.adapters.api import routes, panel_routes, user_routes, auth_routes
+from src.solar_api.database import init_db
 
 app = FastAPI(
     title="SolarView API",
-    description="API to estimate solar panel energy production using PVGIS and manage panel models.",
+    description="""
+    API to estimate solar panel energy production using PVGIS and manage panel models.
+    
+    ## Authentication
+    
+    This API uses JWT for authentication. To get started:
+    1. Create a user account at `/users/`
+    2. Get an access token at `/token`
+    3. Use the access token in the Authorization header: `Bearer <token>`
+    """,
     version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(routes.router)
 app.include_router(panel_routes.router)
-
-
+app.include_router(user_routes.router)
+app.include_router(auth_routes.router)
 @app.get("/", include_in_schema=False)
-def root():
+async def root():
     return {
         "message": "Bem-vindo à API do WB SolarView. Acesse /docs para ver a documentação da API."
     }
 
+@app.on_event("startup")
+async def startup_event():
+    await init_db()
+    print("Database initialized")
 
 if __name__ == "__main__":
     uvicorn.run(
