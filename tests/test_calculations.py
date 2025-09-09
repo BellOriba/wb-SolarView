@@ -112,7 +112,9 @@ def mock_pvgis_client():
 
 
 @pytest.mark.asyncio
-async def test_calculate_solar_production(client: AsyncClient, mock_pvgis_client):
+async def test_calculate_solar_production(
+    client: AsyncClient, mock_pvgis_client, admin_auth_header
+):
     """Test solar production calculation with valid input."""
     # Setup mock
     mock_instance = mock_pvgis_client
@@ -120,7 +122,7 @@ async def test_calculate_solar_production(client: AsyncClient, mock_pvgis_client
 
     request_data = {"lat": -23.5505, "lon": -46.6333, "peakpower": 5.0, "loss": 14.0}
 
-    response = await client.post("/calculate", json=request_data)
+    response = await client.post("/calculate", json=request_data, headers=admin_auth_header)
 
     assert_response_status(response, status.HTTP_200_OK)
     data = response.json()
@@ -143,7 +145,7 @@ async def test_calculate_solar_production(client: AsyncClient, mock_pvgis_client
 @pytest.mark.parametrize("missing_field", ["lat", "lon", "peakpower", "loss"])
 @pytest.mark.asyncio
 async def test_calculate_solar_production_missing_required_fields(
-    client: AsyncClient, mock_pvgis_client, missing_field: str
+    client: AsyncClient, mock_pvgis_client, missing_field: str, admin_auth_header
 ):
     """Test calculation with missing required fields."""
     # Setup test data
@@ -151,7 +153,7 @@ async def test_calculate_solar_production_missing_required_fields(
     data.pop(missing_field)
 
     # Make request and verify response
-    response = await client.post("/calculate", json=data)
+    response = await client.post("/calculate", json=data, headers=admin_auth_header)
     assert_error_response(response, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     # Verify PVGIS client was not called
@@ -160,7 +162,7 @@ async def test_calculate_solar_production_missing_required_fields(
 
 @pytest.mark.asyncio
 async def test_calculate_solar_production_invalid_coordinates(
-    client: AsyncClient, mock_pvgis_client
+    client: AsyncClient, mock_pvgis_client, admin_auth_header
 ):
     """Test calculation with invalid coordinates."""
     # Setup test data with invalid coordinates
@@ -172,7 +174,7 @@ async def test_calculate_solar_production_invalid_coordinates(
     }
 
     # Make request and verify response
-    response = await client.post("/calculate", json=request_data)
+    response = await client.post("/calculate", json=request_data, headers=admin_auth_header)
     # No range validation in PVGISRequest, so expect 200 with mocked response
     assert_response_status(response, status.HTTP_200_OK)
 

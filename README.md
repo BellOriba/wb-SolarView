@@ -110,16 +110,6 @@ A SolarView API inclui um sistema completo de gerenciamento de usuários com aut
    X-API-Key: sua-chave-de-api-aqui
    ```
 
-### Endpoints Protegidos
-
-- `GET /auth/me` - Retorna informações do usuário autenticado
-- `POST /auth/rotate-key` - Gera uma nova chave de API
-- `POST /auth/admin/rotate-key/{user_id}` - Gera nova chave para um usuário (apenas admin)
-- `GET /users/` - Lista usuários (apenas admin)
-- `GET /users/{user_id}` - Busca usuário por ID
-- `PUT /users/{user_id}` - Atualiza usuário
-- `DELETE /users/{user_id}` - Remove usuário (apenas admin)
-
 ## Guia de Instalação e Execução
 
 ### Pré-requisitos
@@ -213,7 +203,7 @@ A aplicação inclui documentação interativa gerada automaticamente:
 
 #### Autenticação na Documentação
 1. Clique no botão "Authorize" no canto superior direito
-2. Insira sua chave de API no formato: `Bearer sua-chave-aqui`
+2. Insira sua chave de API.
 3. Clique em "Authorize" para ativar a autenticação
 
 ### Testes
