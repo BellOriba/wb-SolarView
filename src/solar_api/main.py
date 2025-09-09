@@ -78,17 +78,13 @@ def custom_openapi():
 
     if "components" not in openapi_schema:
         openapi_schema["components"] = {}
-    
+
     openapi_schema["components"]["securitySchemes"] = {
-        "APIKeyHeader": {
-            "type": "apiKey",
-            "name": "X-API-Key",
-            "in": "header"
-        }
+        "APIKeyHeader": {"type": "apiKey", "name": "X-API-Key", "in": "header"}
     }
-    
+
     openapi_schema["security"] = [{"APIKeyHeader": []}]
-    
+
     app.openapi_schema = openapi_schema
     return openapi_schema
 

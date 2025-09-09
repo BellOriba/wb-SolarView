@@ -29,18 +29,24 @@ async def init_admin_user(db: AsyncSession) -> bool:
             existing_admin = result.scalars().first()
 
             if existing_admin:
-                print(f"Admin user '{admin_email}' already exists.")
+                print(f"Admin user {admin_email} already exists")
+                return False
+
+            admin_count = await db.scalar(select(User).where(User.is_admin))
+            if admin_count is not None:
+                print("Admin user already exists in the system")
                 return False
 
             admin_user = User(
                 email=admin_email,
+                hashed_password=admin_password,
                 api_key=generate_api_key(),
                 is_active=True,
                 is_admin=True,
             )
 
             db.add(admin_user)
-            await db.flush()
+            await db.commit()
 
             print(f"Created admin user: {admin_email}")
             print(f"API Key: {admin_user.api_key}")

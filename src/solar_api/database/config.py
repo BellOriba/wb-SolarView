@@ -265,8 +265,8 @@ async def init_db() -> None:
         logger.info("Ensuring database exists...")
         await ensure_database_exists()
 
-        logger.info("Creating tables...")
-        await create_tables(engine, drop_existing=True)
+        logger.info("Verificando e criando tabelas se necessário...")
+        await create_tables(engine, drop_existing=False)
 
         try:
             from .initial_data import init_database
