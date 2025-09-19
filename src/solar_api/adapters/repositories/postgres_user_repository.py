@@ -36,6 +36,7 @@ class PostgresUserRepository(UserRepositoryPort):
     async def create(self, user_data: Dict[str, Any]) -> UserInDB:
         db_user = UserModel(
             email=user_data["email"],
+            password=user_data["password"],
             api_key=user_data["api_key"],
             is_active=user_data.get("is_active", True),
             is_admin=user_data.get("is_admin", False),
