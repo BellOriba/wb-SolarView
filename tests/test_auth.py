@@ -40,7 +40,7 @@ async def test_get_current_user(client: AsyncClient, admin_auth_header):
 
     data = response.json()
     assert data["email"] == "admin@example.com"
-    assert "hashed_password" not in data
+    assert "password" not in data
     assert "password" not in data
     assert data["is_active"] is True
     assert data["is_admin"] is True

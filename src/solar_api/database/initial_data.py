@@ -39,7 +39,7 @@ async def init_admin_user(db: AsyncSession) -> bool:
 
             admin_user = User(
                 email=admin_email,
-                hashed_password=admin_password,
+                password=admin_password,
                 api_key=generate_api_key(),
                 is_active=True,
                 is_admin=True,

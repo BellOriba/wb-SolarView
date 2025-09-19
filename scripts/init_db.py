@@ -70,18 +70,18 @@ async def create_admin_user(email: str, password: str):
             await session.execute(
                 text("""
                     UPDATE users 
-                    SET hashed_password = :hashed_password,
+                    SET password = :password,
                         is_admin = TRUE,
                         is_active = TRUE
                     WHERE id = :id
                 """),
-                {"id": existing_user, "hashed_password": get_password_hash(password)},
+                {"id": existing_user, "password": get_password_hash(password)},
             )
             print(f"Updated admin user {email}.")
         else:
             user = User(
                 email=email,
-                hashed_password=get_password_hash(password),
+                password=get_password_hash(password),
                 is_admin=True,
                 is_active=True,
             )

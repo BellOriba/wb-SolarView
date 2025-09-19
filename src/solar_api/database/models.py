@@ -22,7 +22,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
+    password = Column(String, nullable=False)
     api_key = Column(String, unique=True, index=True, nullable=False)
     is_active = Column(Boolean, server_default=expression.true(), nullable=False)
     is_admin = Column(
