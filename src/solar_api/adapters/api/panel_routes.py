@@ -74,10 +74,10 @@ async def get_panel_model(
 )
 async def create_panel_model(
     panel: PanelModelCreate,
-    admin_user: UserInDB = Depends(get_admin_user),
+    current_user: UserInDB = Depends(get_current_user),
     panel_service: PanelService = Depends(get_panel_service),
 ):
-    return await panel_service.create_model(panel=panel, user_id=admin_user.id)
+    return await panel_service.create_model(panel=panel, user_id=current_user.id)
 
 
 @router.put(
@@ -86,11 +86,11 @@ async def create_panel_model(
 async def update_panel_model(
     model_id: UUID,
     panel_update: PanelModelUpdate,
-    admin_user: UserInDB = Depends(get_admin_user),
+    current_user: UserInDB = Depends(get_current_user),
     panel_service: PanelService = Depends(get_panel_service),
 ):
     return await panel_service.update_model(
-        model_id=model_id, panel_update=panel_update, user_id=admin_user.id
+        model_id=model_id, panel_update=panel_update, user_id=current_user.id
     )
 
 
@@ -101,8 +101,8 @@ async def update_panel_model(
 )
 async def delete_panel_model(
     model_id: UUID,
-    admin_user: UserInDB = Depends(get_admin_user),
+    current_user: UserInDB = Depends(get_current_user),
     panel_service: PanelService = Depends(get_panel_service),
 ):
-    await panel_service.delete_model(model_id=model_id, user_id=admin_user.id)
+    await panel_service.delete_model(model_id=model_id, user_id=current_user.id)
     return None
