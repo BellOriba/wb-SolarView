@@ -1,7 +1,7 @@
 from typing import Optional, List
 from ...domain.user_models import UserCreate, UserUpdate, UserInDB, generate_api_key
 from ...application.ports.user_repository import UserRepositoryPort
-
+from src.solar_api.adapters.api.dependencies import pwd_context
 
 class UserService:
     def __init__(self, user_repository: UserRepositoryPort):
@@ -21,7 +21,9 @@ class UserService:
         if existing_user:
             raise ValueError("User with this email already exists")
 
+        hashed_password = pwd_context.hash(user.password)
         user_data = user.model_dump()
+        user_data["password"] = hashed_password
         user_data["api_key"] = generate_api_key()
 
         return await self.user_repository.create(user_data)
