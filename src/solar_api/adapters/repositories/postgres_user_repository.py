@@ -2,6 +2,7 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.solar_api.adapters.api.dependencies import pwd_context
 from src.solar_api.domain.user_models import UserInDB
 from src.solar_api.database.models import User as UserModel
 from src.solar_api.application.ports.user_repository import UserRepositoryPort
@@ -81,8 +82,15 @@ class PostgresUserRepository(UserRepositoryPort):
         return [UserInDB.from_orm(user) for user in users]
 
     async def authenticate(self, email: str, password: str) -> Optional[UserInDB]:
-        user = await self.get_by_email(email)
-        if not user or not user.is_active:
+        result = await self.db.execute(
+            select(UserModel).where(UserModel.email == email)
+        )
+        user = result.scalars().first()
+
+        if not user or not pwd_context.verify(password, user.password):
+            return None
+        
+        if not user.is_active:
             return None
 
-        return user
+        return UserInDB.from_orm(user)
