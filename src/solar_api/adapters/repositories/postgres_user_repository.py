@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.solar_api.adapters.api.dependencies import pwd_context
+from src.solar_api.application.security import pwd_context
 from src.solar_api.domain.user_models import UserInDB
 from src.solar_api.database.models import User as UserModel
 from src.solar_api.application.ports.user_repository import UserRepositoryPort

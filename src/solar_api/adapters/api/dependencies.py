@@ -4,12 +4,11 @@ import secrets
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from pydantic import BaseModel
 from src.solar_api.domain.user_models import UserInDB
 from src.solar_api.database import get_db
-from src.solar_api.application.services.user_service import UserService
 from src.solar_api.adapters.repositories import PostgresUserRepository
+from src.solar_api.application.services.user_service import UserService
 import os
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -18,7 +17,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 security = HTTPBasic()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 
 class Token(BaseModel):

@@ -1,7 +1,7 @@
 from typing import Optional, List
 from ...domain.user_models import UserCreate, UserUpdate, UserInDB, generate_api_key
 from ...application.ports.user_repository import UserRepositoryPort
-from src.solar_api.adapters.api.dependencies import pwd_context
+from ..security import pwd_context
 
 class UserService:
     def __init__(self, user_repository: UserRepositoryPort):
