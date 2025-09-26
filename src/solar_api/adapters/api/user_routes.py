@@ -63,7 +63,7 @@ async def read_user(
 async def list_users(
     skip: int = 0,
     limit: int = 100,
-    current_user: UserInDB = Depends(get_admin_user),
+    current_user: UserInDB = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service),
 ):
     return await user_service.list_users(skip=skip, limit=limit)
